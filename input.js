@@ -7,6 +7,8 @@ const {
 } = require("./constants");
 
 let connection;
+let interval;
+let prevKey;
 
 const setupInput = (conn) => {
   connection = conn;
@@ -20,24 +22,31 @@ const setupInput = (conn) => {
 };
 
 const handleUserInput = (key) => {
+  const moveFunc = (direction) => {
+    clearInterval(interval);
+    interval = setInterval(() => connection.write(`Move: ${direction}`), 100);
+  };
   if (key === "\u0003") {
     process.exit();
   }
-  if (key === MOVE_UP_KEY) {
-    connection.write("Move: up");
+  if (key === MOVE_UP_KEY && prevKey !== MOVE_DOWN_KEY) {
+    moveFunc("up");
   }
-  if (key === MOVE_LEFT_KEY) {
-    connection.write("Move: left");
+  if (key === MOVE_DOWN_KEY && prevKey !== MOVE_UP_KEY) {
+    moveFunc("down");
   }
-  if (key === MOVE_DOWN_KEY) {
-    connection.write("Move: down");
+  if (key === MOVE_LEFT_KEY && prevKey !== MOVE_RIGHT_KEY) {
+    moveFunc("left");
   }
-  if (key === MOVE_RIGHT_KEY) {
-    connection.write("Move: right");
+  if (key === MOVE_RIGHT_KEY && prevKey !== MOVE_LEFT_KEY) {
+    moveFunc("right");
   }
+
   if (KEY_MAP[key]) {
     connection.write(`Say: ${KEY_MAP[key]}`);
   }
+
+  prevKey = key;
 };
 
 module.exports = { setupInput };
